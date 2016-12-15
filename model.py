@@ -48,17 +48,18 @@ class EMNaiveBayes():
         # print feature_list
         # print self.num_val_per_fea
         # print self.X_number
-        # print self.X_onehot
-        print self.A
-        print self.X_number
-        print self.Pk
+        print self.X_onehot
+        print self.A_onehot
+        # print self.A
+        # print self.X_number
+        # print self.Pk
 
     def _update(self):
         self.Pk_old = copy.deepcopy(self.Pk)  # deep copy here
         self.A_old = copy.deepcopy(self.A)
 
-        self.V = np.ones((self.num_exp, self.num_class))
         '''
+        self.V = np.ones((self.num_exp, self.num_class))
         for j in range(self.num_fea):
             # print (self.A[j][:, self.X_number[:, j]]).T
             self.V *= (self.A[j][:, self.X_number[:, j]]).T
@@ -69,12 +70,30 @@ class EMNaiveBayes():
         print self.V
         '''
 
+        self.V = np.ones((self.num_exp, self.num_class))
+        for i in range(self.num_exp):
+            for j in range(self.num_class):
+                tmp = self.X_onehot[i] * self.A_onehot[j]
+                mul = 1
+                for num in tmp[tmp!=0]:
+                    mul *= num
+                self.V[i, j] = mul
+        self.V *= self.Pk
+        self.V = self.V / np.sum(self.V, axis=1, keepdims=True)
+        # print self.V
+
+        # update
+        self.Pk = np.sum(self.V, axis=0) / self.num_exp
+        self.A_onehot
+
+
+
 
 
 if __name__ == '__main__':
     # toy data as an example. For more, please go to main.py
     X = np.array([['A', 'B', 'A'], ['B', 'A', 'B'], ['B', 'A', 'C']])
-    Y = np.array(['P', 'Q', 'I'])
+    Y = np.array(['P', 'Q'])
     m = EMNaiveBayes(0.1)
-    m._train_init(X, 3)
+    m._train_init(X, 2)
     m._update()
